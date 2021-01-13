@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "lib": ["es5", "es6", "ESNext"],
+    // "alwaysStrict": true,
+    "module": "esnext",
+    // "strict": true,
+    "target": "es6",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "declaration": true
+  },
+  "include": ["src/**/*", "typings/global.d.ts"],
+  "exclude": ["node_modules", "tests"]
+}
