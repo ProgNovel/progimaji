@@ -7,7 +7,7 @@ import type { ImageSize } from "typings/index";
 import { imageResize, supportedImageType, imageType } from "./backend/resizing";
 
 export async function resize(req: any, res: ServerResponse) {
-  const throttle = await putTaskInQueue();
+  const throttle = await putTaskInQueue(req);
   let { type, url, quality, width, height } = req.query as RequestQuery;
   let imageQuality: number;
 
@@ -24,6 +24,8 @@ export async function resize(req: any, res: ServerResponse) {
     const data = await fetch(url);
     res.writeHead(200, {
       "Content-Type": "image/" + type,
+      // later below header can be customized or disabled by choice
+      "Interledger-Billing": "free",
     });
     const task = data.body.pipe(imageResize({ type, quality: imageQuality, size })).pipe(res);
     // res.end("Testing");

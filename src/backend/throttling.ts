@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import { THROTTLE_TASK, THROTTLE_TASK_MAX } from "../../prog-imaji.config";
+import { THROTTLE_TASK, THROTTLE_TASK_MAX } from "../../progimaji.config";
 import { TasksQueueEvent, taskId, TaskThrottleInstance } from "../../typings";
 import { EventEmitter } from "events";
 import { PolkaRequest } from "../../typings/global";
