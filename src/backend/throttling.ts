@@ -36,9 +36,8 @@ export async function putTaskInQueue(request: PolkaRequest): Promise<TaskThrottl
     onhold: true,
     resolved: new Promise(() => {}),
   };
-  let isWaitingQueue: Promise<never | any>;
   if (THROTTLE_TASK && Object.keys(tasksQueue).length <= THROTTLE_TASK_MAX) {
-    isWaitingQueue = Promise.resolve();
+    _done(id);
   }
 
   tasksQueue[id].onhold = false;
@@ -48,11 +47,11 @@ export async function putTaskInQueue(request: PolkaRequest): Promise<TaskThrottl
     // TODO pick only awaiting tasks in queue
     if (firstKey === id) {
       console.log("Pick a task", id);
-      tasksQueue[firstKey].resolved = Promise.resolve();
+      _done(id);
     }
   });
 
-  await isWaitingQueue;
+  await tasksQueue[id].resolved;
   return _startRequestedTask();
 
   function _startRequestedTask(): TaskThrottleInstance {
@@ -63,5 +62,10 @@ export async function putTaskInQueue(request: PolkaRequest): Promise<TaskThrottl
       // quality: 70,
       // url: "",
     };
+  }
+
+  function _done(id) {
+    tasksQueue[id].onhold = false;
+    tasksQueue[id].resolved = Promise.resolve();
   }
 }
