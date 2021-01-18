@@ -1,7 +1,7 @@
 import { SERVER_PORT } from "../progimaji.config";
 import polka, { Request } from "polka";
 import { resize } from "./routes";
-import package from "../package.json";
+// import package from "../package.json";
 
 const PORT = SERVER_PORT || 5000;
 

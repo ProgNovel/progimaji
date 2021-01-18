@@ -9,7 +9,7 @@ const extensions = [
 
 export default {
   input: 'src/index.ts',
-  external: [],
+  external: ['sharp'],
   plugins: [
     resolve({ extensions }),
     commonjs(),

@@ -1,14 +1,12 @@
-export type taskId = string;
+// declare type taskId = string;
 
-export interface ImageSize {
+interface ImageSize {
   width?: number;
   height?: number;
 }
 
-export interface TaskThrottleInstance {
-  id: taskId;
+interface TaskThrottleInstance {
+  id: string;
 }
 
-export enum TasksQueueEvent {
-  OneTaskCompleted = "taskcompleted",
-}
+// export { taskId };

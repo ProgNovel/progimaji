@@ -1,5 +1,3 @@
-import type { ProgImajiConfig } from "./typings/global";
-
 export const ACCESS_CONTROL_ALLOW_ORIGIN = "*";
 export const REMOTE_URL_SOURCE_ALLOW_ORIGIN = "*";
 export const CLOUDFLARE_WORKERS_URL = "";

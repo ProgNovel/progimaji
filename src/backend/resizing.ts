@@ -1,5 +1,4 @@
 import sharp from "sharp";
-import { ImageSize } from "../../typings";
 
 interface ImageResizeParams {
   type: imageType;

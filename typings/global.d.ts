@@ -1,15 +1,15 @@
 import { RequestHandler } from "express";
 import { Request } from "polka";
 
-export type RequestQuery = {
+declare type RequestQuery = {
   [key: string]: any;
 };
 
-export interface PolkaRequest extends Request, RequestHandler {
+interface PolkaRequest extends Request, RequestHandler {
   search: string | undefined;
 }
 
-export interface ProgImajiConfig {
+interface ProgImajiConfig {
   ACCESS_CONTROL_ALLOW_ORIGIN: string;
   REMOTE_URL_SOURCE_ALLOW_ORIGIN: string;
   THROTTLE_TASK: boolean;

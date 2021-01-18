@@ -9,6 +9,6 @@
     "allowSyntheticDefaultImports": true,
     "declaration": true
   },
-  "include": ["src/**/*", "typings/global.d.ts"],
+  "include": ["src/**/*", "typings/global.d.ts", "typings/index.d.ts"],
   "exclude": ["node_modules", "tests"]
 }

@@ -1,8 +1,9 @@
 import { nanoid } from "nanoid";
 import { THROTTLE_TASK, THROTTLE_TASK_MAX } from "../../progimaji.config";
-import { TasksQueueEvent, taskId, TaskThrottleInstance } from "../../typings";
 import { EventEmitter } from "events";
 import { PolkaRequest } from "../../typings/global";
+// import type { taskId } from "../../typings";
+import { TasksQueueEvent } from "./_vars";
 
 export let tasksQueue = {};
 const tasks = new EventEmitter();
@@ -15,7 +16,7 @@ const tasks = new EventEmitter();
  *
  * @param id an unique random ID for HTTP request
  */
-export function completeTask(id: taskId) {
+export function completeTask(id: string) {
   // rather than using Array.filter(), look for
   // a more performance array member delete later
   delete tasksQueue[id];
@@ -30,7 +31,7 @@ export function completeTask(id: taskId) {
  * @returns Promise TaskThrottleInstance
  */
 export async function putTaskInQueue(request: PolkaRequest): Promise<TaskThrottleInstance> {
-  const id: taskId = nanoid();
+  const id: string = nanoid();
   tasksQueue[id] = {
     onhold: true,
   };
@@ -54,10 +55,10 @@ export async function putTaskInQueue(request: PolkaRequest): Promise<TaskThrottl
   function _startRequestedTask(): TaskThrottleInstance {
     return {
       id,
-      width: 1,
-      height: 2,
-      quality: 70,
-      url: "",
+      // width: 1,
+      // height: 2,
+      // quality: 70,
+      // url: "",
     };
   }
 }

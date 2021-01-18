@@ -1,14 +1,12 @@
 import { ServerResponse } from "http";
+import { createReadStream } from "fs";
 import fetch from "node-fetch";
-import { RequestQuery } from "../typings/global";
 import { completeTask, putTaskInQueue } from "./backend/throttling";
-//@ts-expect-error
-import type { ImageSize } from "typings/index";
 import { imageResize, supportedImageType, imageType } from "./backend/resizing";
 
 export async function resize(req: any, res: ServerResponse) {
   const throttle = await putTaskInQueue(req);
-  let { type, url, quality, width, height } = req.query as RequestQuery;
+  let { type, url, quality, width, height } = req.query;
   let imageQuality: number;
 
   const size: ImageSize = {};
@@ -21,13 +19,14 @@ export async function resize(req: any, res: ServerResponse) {
     if (!supportedImageType.includes(type)) {
       throw new Error(`Image type ${type} is not supported.`);
     }
-    const data = await fetch(url);
+    // const data = (await fetch(url)).body;
+    const data = createReadStream("mock/mock.png");
     res.writeHead(200, {
       "Content-Type": "image/" + type,
       // later below header can be customized or disabled by choice
       "Interledger-Billing": "free",
     });
-    const task = data.body.pipe(imageResize({ type, quality: imageQuality, size })).pipe(res);
+    const task = data.pipe(imageResize({ type, quality: imageQuality, size })).pipe(res);
     // res.end("Testing");
   } catch (err) {
     res.writeHead(500);
