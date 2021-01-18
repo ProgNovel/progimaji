@@ -1,21 +1,151 @@
 'use strict';
 
+var crypto = require('crypto');
+var events = require('events');
 var http = require('http');
 var require$$0$1 = require('querystring');
 var fs = require('fs');
-var crypto = require('crypto');
-var events = require('events');
 var sharp = require('sharp');
 
 function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
+var crypto__default = /*#__PURE__*/_interopDefaultLegacy(crypto);
 var http__default = /*#__PURE__*/_interopDefaultLegacy(http);
 var require$$0__default = /*#__PURE__*/_interopDefaultLegacy(require$$0$1);
-var crypto__default = /*#__PURE__*/_interopDefaultLegacy(crypto);
 var sharp__default = /*#__PURE__*/_interopDefaultLegacy(sharp);
 
-const THROTTLE_TASK_MAX = 5;
+const THROTTLE_TASK_MAX = 1;
 const SERVER_PORT = 5000;
+
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+
+function __awaiter(thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+}
+
+// This alphabet uses `A-Za-z0-9_-` symbols. The genetic algorithm helped
+// optimize the gzip compression for this alphabet.
+let urlAlphabet =
+  'ModuleSymbhasOwnPr-0123456789ABCDEFGHNRVfgctiUvz_KqYTJkLxpZXIjQW';
+
+// It is best to make fewer, larger requests to the crypto module to
+// avoid system call overhead. So, random numbers are generated in a
+// pool. The pool is a Buffer that is larger than the initial random
+// request size by this multiplier. The pool is enlarged if subsequent
+// requests exceed the maximum buffer size.
+const POOL_SIZE_MULTIPLIER = 32;
+let pool, poolOffset;
+
+let random = bytes => {
+  if (!pool || pool.length < bytes) {
+    pool = Buffer.allocUnsafe(bytes * POOL_SIZE_MULTIPLIER);
+    crypto__default['default'].randomFillSync(pool);
+    poolOffset = 0;
+  } else if (poolOffset + bytes > pool.length) {
+    crypto__default['default'].randomFillSync(pool);
+    poolOffset = 0;
+  }
+
+  let res = pool.subarray(poolOffset, poolOffset + bytes);
+  poolOffset += bytes;
+  return res
+};
+
+let nanoid = (size = 21) => {
+  let bytes = random(size);
+  let id = '';
+  // A compact alternative for `for (var i = 0; i < step; i++)`.
+  while (size--) {
+    // It is incorrect to use bytes exceeding the alphabet size.
+    // The following mask reduces the random byte in the 0-255 value
+    // range to the 0-63 value range. Therefore, adding hacks, such
+    // as empty string fallback or magic numbers, is unneccessary because
+    // the bitmask trims bytes down to the alphabet size.
+    id += urlAlphabet[bytes[size] & 63];
+  }
+  return id
+};
+
+var tasksQueue = {};
+var tasks = new events.EventEmitter();
+/**
+ * This should be called when an image transformation task completed or an HTTP
+ * request readable stream is closed. It will delete the relevant throttle instance
+ * in tasks queue and emit an event to signal for the next task in the queue to start if
+ * there's any.
+ *
+ * @param id an unique random ID for HTTP request
+ */
+
+function completeTask(id) {
+  // rather than using Array.filter(), look for
+  // a more performance array member delete later
+  delete tasksQueue[id];
+  tasks.emit("taskcompleted"
+  /* OneTaskCompleted */
+  );
+}
+/**
+ * Put a HTTP request on queue if server is currently a number of processing image
+ * optimization tasks.
+ *
+ * @param details details passed to event emitter when HTTP stream closed.
+ * @returns Promise TaskThrottleInstance
+ */
+
+function putTaskInQueue(request) {
+  return __awaiter(this, void 0, void 0, function* () {
+    var id = nanoid();
+    tasksQueue[id] = {
+      onhold: true,
+      resolved: new Promise(() => {})
+    };
+    var isWaitingQueue;
+
+    if ( Object.keys(tasksQueue).length <= THROTTLE_TASK_MAX) {
+      isWaitingQueue = Promise.resolve();
+    }
+
+    tasksQueue[id].onhold = false;
+    tasks.on("taskcompleted"
+    /* OneTaskCompleted */
+    , () => {
+      var firstKey = Object.keys(tasksQueue)[0]; // TODO pick only awaiting tasks in queue
+
+      if (firstKey === id) {
+        console.log("Pick a task", id);
+        tasksQueue[firstKey].resolved = Promise.resolve();
+      }
+    });
+    yield isWaitingQueue;
+    return _startRequestedTask();
+
+    function _startRequestedTask() {
+      return {
+        id
+      };
+    }
+  });
+}
 
 function every (arr, cb) {
 	var i=0, len=arr.length;
@@ -142,10 +272,10 @@ function exec(str, arr) {
 }
 
 var matchit = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	match: match,
-	parse: parse,
-	exec: exec
+    __proto__: null,
+    match: match,
+    parse: parse,
+    exec: exec
 });
 
 function getAugmentedNamespace(n) {
@@ -335,133 +465,6 @@ class Polka extends trouter {
 
 var polka = opts => new Polka(opts);
 
-/*! *****************************************************************************
-Copyright (c) Microsoft Corporation.
-
-Permission to use, copy, modify, and/or distribute this software for any
-purpose with or without fee is hereby granted.
-
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-PERFORMANCE OF THIS SOFTWARE.
-***************************************************************************** */
-
-function __awaiter(thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-}
-
-// This alphabet uses `A-Za-z0-9_-` symbols. The genetic algorithm helped
-// optimize the gzip compression for this alphabet.
-let urlAlphabet =
-  'ModuleSymbhasOwnPr-0123456789ABCDEFGHNRVfgctiUvz_KqYTJkLxpZXIjQW';
-
-// It is best to make fewer, larger requests to the crypto module to
-// avoid system call overhead. So, random numbers are generated in a
-// pool. The pool is a Buffer that is larger than the initial random
-// request size by this multiplier. The pool is enlarged if subsequent
-// requests exceed the maximum buffer size.
-const POOL_SIZE_MULTIPLIER = 32;
-let pool, poolOffset;
-
-let random = bytes => {
-  if (!pool || pool.length < bytes) {
-    pool = Buffer.allocUnsafe(bytes * POOL_SIZE_MULTIPLIER);
-    crypto__default['default'].randomFillSync(pool);
-    poolOffset = 0;
-  } else if (poolOffset + bytes > pool.length) {
-    crypto__default['default'].randomFillSync(pool);
-    poolOffset = 0;
-  }
-
-  let res = pool.subarray(poolOffset, poolOffset + bytes);
-  poolOffset += bytes;
-  return res
-};
-
-let nanoid = (size = 21) => {
-  let bytes = random(size);
-  let id = '';
-  // A compact alternative for `for (var i = 0; i < step; i++)`.
-  while (size--) {
-    // It is incorrect to use bytes exceeding the alphabet size.
-    // The following mask reduces the random byte in the 0-255 value
-    // range to the 0-63 value range. Therefore, adding hacks, such
-    // as empty string fallback or magic numbers, is unneccessary because
-    // the bitmask trims bytes down to the alphabet size.
-    id += urlAlphabet[bytes[size] & 63];
-  }
-  return id
-};
-
-var tasksQueue = {};
-var tasks = new events.EventEmitter();
-/**
- * This should be called when an image transformation task completed or an HTTP
- * request readable stream is closed. It will delete the relevant throttle instance
- * in tasks queue and emit an event to signal for the next task in the queue to start if
- * there's any.
- *
- * @param id an unique random ID for HTTP request
- */
-
-function completeTask(id) {
-  // rather than using Array.filter(), look for
-  // a more performance array member delete later
-  delete tasksQueue[id];
-  tasks.emit("taskcompleted"
-  /* OneTaskCompleted */
-  );
-}
-/**
- * Put a HTTP request on queue if server is currently a number of processing image
- * optimization tasks.
- *
- * @param details details passed to event emitter when HTTP stream closed.
- * @returns Promise TaskThrottleInstance
- */
-
-function putTaskInQueue(request) {
-  return __awaiter(this, void 0, void 0, function* () {
-    var id = nanoid();
-    tasksQueue[id] = {
-      onhold: true
-    };
-    var isWaitingQueue;
-
-    if ( Object.keys(tasksQueue).length > THROTTLE_TASK_MAX) {
-      isWaitingQueue = new Promise(() => {});
-    } else {
-      isWaitingQueue = Promise.resolve();
-    }
-
-    tasksQueue[id].onhold = false;
-    tasks.on("taskcompleted"
-    /* OneTaskCompleted */
-    , () => {
-      // TODO pick only awaiting tasks in queue
-      if (Object.keys(tasksQueue)[0] === id) isWaitingQueue = Promise.resolve();
-    });
-    yield isWaitingQueue;
-    return _startRequestedTask();
-
-    function _startRequestedTask() {
-      return {
-        id
-      };
-    }
-  });
-}
-
 function imageResize(_ref) {
   var {
     type,
@@ -512,6 +515,7 @@ function resize(req, res) {
     if (width) size.width = parseInt(width);
     if (quality) imageQuality = parseInt(quality);
     if (!type) type = "auto";
+    yield new Promise(resolve => setTimeout(resolve, 3000));
 
     try {
       if (!supportedImageType.includes(type)) {
@@ -551,4 +555,6 @@ polka().get("/", versionAndHealthCheck).get("/resize", resize).listen(PORT, err 
   console.log("Started on port", PORT);
 });
 
-function versionAndHealthCheck(req, res) {}
+function versionAndHealthCheck(req, res) {
+  res.end("Current concurrent image optimization: " + Object.keys(tasksQueue).length + ".");
+}

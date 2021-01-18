@@ -15,6 +15,8 @@ export async function resize(req: any, res: ServerResponse) {
   if (quality) imageQuality = parseInt(quality);
   if (!type) type = "auto";
 
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+
   try {
     if (!supportedImageType.includes(type)) {
       throw new Error(`Image type ${type} is not supported.`);

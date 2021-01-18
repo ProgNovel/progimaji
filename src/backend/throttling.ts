@@ -34,19 +34,22 @@ export async function putTaskInQueue(request: PolkaRequest): Promise<TaskThrottl
   const id: string = nanoid();
   tasksQueue[id] = {
     onhold: true,
+    resolved: new Promise(() => {}),
   };
   let isWaitingQueue: Promise<never | any>;
-  if (THROTTLE_TASK && Object.keys(tasksQueue).length > THROTTLE_TASK_MAX) {
-    isWaitingQueue = new Promise(() => {});
-  } else {
+  if (THROTTLE_TASK && Object.keys(tasksQueue).length <= THROTTLE_TASK_MAX) {
     isWaitingQueue = Promise.resolve();
   }
 
   tasksQueue[id].onhold = false;
 
   tasks.on(TasksQueueEvent.OneTaskCompleted, () => {
+    const firstKey = Object.keys(tasksQueue)[0];
     // TODO pick only awaiting tasks in queue
-    if (Object.keys(tasksQueue)[0] === id) isWaitingQueue = Promise.resolve();
+    if (firstKey === id) {
+      console.log("Pick a task", id);
+      tasksQueue[firstKey].resolved = Promise.resolve();
+    }
   });
 
   await isWaitingQueue;

@@ -1,4 +1,5 @@
 import { SERVER_PORT } from "../progimaji.config";
+import { tasksQueue } from "./backend/throttling";
 import polka, { Request } from "polka";
 import { resize } from "./routes";
 // import package from "../package.json";
@@ -13,4 +14,6 @@ polka()
     console.log("Started on port", PORT);
   });
 
-function versionAndHealthCheck(req, res) {}
+function versionAndHealthCheck(req, res) {
+  res.end(`Current concurrent image optimization: ${Object.keys(tasksQueue).length}.`);
+}
