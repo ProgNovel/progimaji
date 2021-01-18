@@ -14,7 +14,7 @@ var http__default = /*#__PURE__*/_interopDefaultLegacy(http);
 var require$$0__default = /*#__PURE__*/_interopDefaultLegacy(require$$0$1);
 var sharp__default = /*#__PURE__*/_interopDefaultLegacy(sharp);
 
-const THROTTLE_TASK_MAX = 1;
+const THROTTLE_TASK_MAX = 10;
 const SERVER_PORT = 5000;
 
 /*! *****************************************************************************
