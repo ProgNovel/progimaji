@@ -24,11 +24,11 @@ For hardware provision recommendation, it more or less the same as other image r
 
 ## Planned features
 
-[x] HTTP requests throttling (WARNING: HTTP throttling hasn't been tested in real world application).
-[_] JXL and AVIF image transformation. AVIF format already landed in Sharp, but its encode speed is so slow that it ought to be handled with extra care before going to production.
-[_] Animated GIF -> WEBP / WEBM transformation.
-[_] Monetize ProgImaji per bandwidth/requests with Interledger. Maybe use Koa for app server that Interledger team already made plugin for?
-[_] CORS, proxy, whitelisting url source, requests auth, all that stuff.
+- [x] HTTP requests throttling (WARNING: HTTP throttling hasn't been tested in real world application).
+- [ ] JXL and AVIF image transformation. AVIF format already landed in Sharp, but its encode speed is so slow that it ought to be handled with extra care before going to production.
+- [ ] Animated GIF -> WEBP / WEBM transformation.
+- [ ] Monetize ProgImaji per bandwidth/requests with Interledger. Maybe use Koa for app server that Interledger team already made plugin for?
+- [ ] CORS, proxy, whitelisting url source, requests auth, all that stuff.
 
 ## Integration
 
