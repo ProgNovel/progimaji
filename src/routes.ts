@@ -21,8 +21,8 @@ export async function resize(req: any, res: ServerResponse) {
     if (!supportedImageType.includes(type)) {
       throw new Error(`Image type ${type} is not supported.`);
     }
-    // const data = (await fetch(url)).body;
-    const data = createReadStream("mock/mock.png");
+    const data = (await fetch(url)).body;
+    // const data = createReadStream("mock/mock.png");
     res.writeHead(200, {
       "Content-Type": "image/" + type,
       // later below header can be customized or disabled by choice

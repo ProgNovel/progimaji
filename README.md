@@ -14,7 +14,7 @@ Integration with Interledger also will be considered in the roadmap to entice th
 
 ## Performance
 
-The bottleneck performance of ProgImaji will be its image transformation instead of HTTP requests, so the choice of NodeJS unlikely to significantly impact its performance due to ProgImaji using libvps under the hood (thanks to Sharp). Libvps with Sharp implementation already taking advantages of modern hardware like using multicore processors and the use of SIMD, so it will benefits from being hosted on dedicated modern multicore server.
+The bottleneck performance of ProgImaji will be its image transformation instead of HTTP requests, so the choice of NodeJS unlikely to significantly impact its performance due to ProgImaji using libvps under the hood (thanks to Sharp). Libvps with Sharp implementation already taking advantages of modern hardware like SIMD, thus should be more performant when dealing with large images.
 
 Additionally, ProgImaji uses NodeJS Stream API, piping images buffer chunks by chunks to be processed by libvps while streaming them out into HTTP respond at the same time. This prevent server from buffering the entire image data before processing, thus making it memory efficient during the image transformation process.
 
@@ -24,15 +24,11 @@ For hardware provision recommendation, it more or less the same as other image r
 
 ## Planned features
 
-[ ] HTTP requests throttling.
-
-[ ] JXL and AVIF image transformation.
-
-[ ] Animated GIF -> WEBP / WEBM transformation.
-
-[ ] Monetize ProgImaji per bandwidth/requests with Interledger.
-
-[ ] CORS, proxy, whitelisting url source, requests auth, all that stuff.
+[x] HTTP requests throttling (WARNING: HTTP throttling hasn't been tested in real world application).
+[_] JXL and AVIF image transformation. AVIF format already landed in Sharp, but its encode speed is so slow that it ought to be handled with extra care before going to production.
+[_] Animated GIF -> WEBP / WEBM transformation.
+[_] Monetize ProgImaji per bandwidth/requests with Interledger. Maybe use Koa for app server that Interledger team already made plugin for?
+[_] CORS, proxy, whitelisting url source, requests auth, all that stuff.
 
 ## Integration
 
